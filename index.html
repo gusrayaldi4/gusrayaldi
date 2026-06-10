@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> Campus 2025</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    .bg-grain {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0.3; mix-blend-mode: multiply; pointer-events: none; z-index: 9999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    @keyframes fade-in-up {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(185, 28, 28, 0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .slider-track { display: flex; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9); z-index: 9998; justify-content: center; align-items: center; }
+    .lightbox.active { display: flex; }
+    .lightbox img { max-width: 90%; max-height: 85vh; border-radius: 8px; }
+
+    .nav-glass {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .mobile-menu { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .mobile-menu.open { max-height: 400px; }
+
+    .hover-lift { transition: transform 0.4s ease, box-shadow 0.4s ease; }
+    .hover-lift:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15); }
+
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #1c1917; color: white; padding: 16px 28px; border-radius: 12px;
+      font-size: 14px; font-weight: 500; z-index: 10000;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 20px 40px -12px rgba(0,0,0,0.3);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .countdown-box {
+      background: white; border-radius: 12px; padding: 12px 16px; text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-width: 70px;
+    }
+    .countdown-box .num { font-size: 28px; font-weight: 700; color: #b91c1c; line-height: 1; }
+    .countdown-box .label { font-size: 10px; font-weight: 600; color: #78716c; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+
+    .schedule-tab { cursor: pointer; padding: 10px 24px; border-radius: 9999px; font-weight: 500; font-size: 14px; transition: all 0.3s; }
+    .schedule-tab.active { background: #b91c1c; color: white; }
+    .schedule-tab:not(.active) { background: #f5f5f4; color: #57534e; }
+    .schedule-tab:not(.active):hover { background: #e7e5e4; }
+  </style>
+</head>
+<body class="bg-stone-50 font-sans text-stone-900">
+
+  <!-- Grain Overlay -->
+  <div class="bg-grain"></div>
+
+  <!-- ==================== NAVIGATION ==================== -->
+  <nav class="nav-glass fixed top-0 left-0 right-0 z-50 h-16">
+    <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+      <a href="#beranda" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 bg-red-700 rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform duration-300">FK</div>
+        <span class="font-semibold text-stone-900 tracking-tight hidden sm:block">Festival Kreatif</span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#beranda" class="text-sm font-medium text-stone-600 hover:text-red-700 transition-colors duration-300">Beranda</a>
+        <a href="#tentang" class="text-sm font-medium text-stone-600 hover:text-red-700 transition-colors duration-300">Tentang</a>
+        <a href="#jadwal" class="text-sm font-medium text-stone-600 hover:text-red-700 transition-colors duration-300">Jadwal</a>
+        <a href="#galeri" class="text-sm font-medium text-stone-600 hover:text-red-700 transition-colors duration-300">Galeri</a>
+        <a href="#kontak" class="text-sm font-medium text-stone-600 hover:text-red-700 transition-colors duration-300">Kontak</a>
+        <a href="#pendaftaran" class="bg-red-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-red-800 transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-red-700/20">Daftar Sekarang</a>
+      </div>
+
+      <button id="menuBtn" class="md:hidden p-2 rounded-lg hover:bg-stone-100 transition-colors" onclick="toggleMenu()">
+        <iconify-icon icon="lucide:menu" width="24" height="24" id="menuIcon"></iconify-icon>
+      </button>
+    </div>
+
+    <div id="mobileMenu" class="mobile-menu md:hidden bg-white border-t border-stone-100">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-3">
+        <a href="#beranda" class="text-sm font-medium text-stone-600 py-2 hover:text-red-700 transition-colors" onclick="toggleMenu()">Beranda</a>
+        <a href="#tentang" class="text-sm font-medium text-stone-600 py-2 hover:text-red-700 transition-colors" onclick="toggleMenu()">Tentang</a>
+        <a href="#jadwal" class="text-sm font-medium text-stone-600 py-2 hover:text-red-700 transition-colors" onclick="toggleMenu()">Jadwal</a>
+        <a href="#galeri" class="text-sm font-medium text-stone-600 py-2 hover:text-red-700 transition-colors" onclick="toggleMenu()">Galeri</a>
+        <a href="#kontak" class="text-sm font-medium text-stone-600 py-2 hover:text-red-700 transition-colors" onclick="toggleMenu()">Kontak</a>
+        <a href="#pendaftaran" class="bg-red-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg text-center hover:bg-red-800 transition-all" onclick="toggleMenu()">Daftar Sekarang</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO / BERANDA ==================== -->
+  <section id="beranda" class="relative min-h-screen flex items-center overflow-hidden">
+    <div class="absolute inset-0">
+      <div id="heroSlider" class="slider-track h-full">
+        <div class="min-w-full h-full relative">
+          <img src="https://picsum.photos/seed/festival1/1600/900.jpg" alt="Banner 1" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-r from-stone-900/90 via-stone-900/60 to-transparent"></div>
+        </div>
+        <div class="min-w-full h-full relative">
+          <img src="https://picsum.photos/seed/festival2/1600/900.jpg" alt="Banner 2" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-r from-stone-900/90 via-stone-900/60 to-transparent"></div>
+        </div>
+        <div class="min-w-full h-full relative">
+          <img src="https://picsum.photos/seed/festival3/1600/900.jpg" alt="Banner 3" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-r from-stone-900/90 via-stone-900/60 to-transparent"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto px-6 pt-20 w-full">
+      <div class="max-w-2xl">
+        <div class="opacity-0 animate-fade-in-up" style="animation-delay:100ms">
+          <span class="inline-flex items-center gap-2 bg-red-700/20 backdrop-blur-sm text-red-200 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full border border-red-500/30 mb-6">
+            <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            15 - 17 Agustus 2025
+          </span>
+        </div>
+
+        <h1 class="opacity-0 animate-fade-in-up text-5xl md:text-7xl font-semibold text-white leading-[1.05] tracking-tight mb-6" style="animation-delay:200ms">
+          Festival Kreatif<br>
+          <span class="text-red-400">Campus 2025</span>
+        </h1>
+
+        <p class="opacity-0 animate-fade-in-up text-lg text-stone-300 leading-relaxed mb-8" style="animation-delay:300ms">
+          Wadah kreativitas mahasiswa dalam bidang seni, teknologi, dan inovasi.
+          Bergabunglah dalam 3 hari penuh inspirasi dan kolaborasi!
+        </p>
+
+        <div class="opacity-0 animate-fade-in-up flex gap-3 mb-8" style="animation-delay:400ms" id="countdown">
+          <div class="countdown-box"><div class="num" id="days">00</div><div class="label">Hari</div></div>
+          <div class="countdown-box"><div class="num" id="hours">00</div><div class="label">Jam</div></div>
+          <div class="countdown-box"><div class="num" id="minutes">00</div><div class="label">Menit</div></div>
+          <div class="countdown-box"><div class="num" id="seconds">00</div><div class="label">Detik</div></div>
+        </div>
+
+        <div class="opacity-0 animate-fade-in-up flex flex-wrap gap-4" style="animation-delay:500ms">
+          <a href="#pendaftaran" class="bg-red-700 text-white font-medium px-7 py-3.5 rounded-lg hover:bg-red-800 transition-all duration-300 hover:-translate-y-1 shadow-lg shadow-red-700/30 flex items-center gap-2">
+            Daftar Sekarang
+            <iconify-icon icon="lucide:arrow-right" width="18"></iconify-icon>
+          </a>
+          <a href="#tentang" class="bg-white/10 backdrop-blur-sm text-white font-medium px-7 py-3.5 rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/20 flex items-center gap-2">
+            <iconify-icon icon="lucide:play-circle" width="18"></iconify-icon>
+            Lihat Video
+          </a>
+        </div>
+
+        <div class="flex gap-2 mt-10 opacity-0 animate-fade-in-up" style="animation-delay:600ms">
+          <button onclick="goToSlide(0)" class="slider-dot w-8 h-1.5 rounded-full bg-white/80 transition-all duration-300"></button>
+          <button onclick="goToSlide(1)" class="slider-dot w-8 h-1.5 rounded-full bg-white/30 transition-all duration-300"></button>
+          <button onclick="goToSlide(2)" class="slider-dot w-8 h-1.5 rounded-full bg-white/30 transition-all duration-300"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-10 right-10 animate-float hidden lg:block">
+      <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 text-white text-center">
+        <div class="text-3xl font-bold">500+</div>
+        <div class="text-xs text-stone-300 uppercase tracking-wider mt-1">Peserta</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== TENTANG / PROFIL ==================== -->
+  <section id="tentang" class="py-24 bg-stone-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 reveal">
+        <span class="text-xs font-bold uppercase tracking-widest text-red-700 mb-3 block">Tentang Event</span>
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-4">Apa Itu Festival Kreatif?</h2>
+        <p class="text-stone-500 max-w-xl mx-auto leading-relaxed">Festival tahunan yang menjadi wadah ekspresi kreativitas mahasiswa dari berbagai bidang.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+        <div class="reveal">
+          <div class="relative group">
+            <img src="https://picsum.photos/seed/about-event/700/500.jpg" alt="Tentang Festival"
+              class="w-full h-[400px] object-cover rounded-2xl shadow-2xl group-hover:scale-[1.02] transition-transform duration-700">
+            <div class="absolute -bottom-6 -right-6 bg-red-700 text-white rounded-2xl p-6 shadow-xl">
+              <div class="text-3xl font-bold">5th</div>
+              <div class="text-xs uppercase tracking-wider opacity-80">Tahun</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="reveal">
+            <h3 class="text-2xl font-semibold mb-4">Menginspirasi Generasi Kreatif</h3>
+            <p class="text-stone-500 leading-relaxed">
+              Festival Kreatif Campus adalah acara tahunan yang diselenggarakan oleh BEM Universitas
+              sejak tahun 2021. Event ini bertujuan memberikan ruang bagi mahasiswa untuk mengekspresikan
+              kreativitas mereka melalui berbagai bidang: seni rupa, musik, teknologi, dan entrepreneurship.
+            </p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-stone-100 hover-lift reveal">
+              <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mb-3">
+                <iconify-icon icon="lucide:eye" width="20" class="text-red-700"></iconify-icon>
+              </div>
+              <h4 class="font-semibold text-sm mb-2">Visi</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">Menjadi festival kreatif mahasiswa terdepan yang menginspirasi inovasi dan kolaborasi lintas disiplin.</p>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-stone-100 hover-lift reveal">
+              <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mb-3">
+                <iconify-icon icon="lucide:target" width="20" class="text-red-700"></iconify-icon>
+              </div>
+              <h4 class="font-semibold text-sm mb-2">Misi</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">Menyediakan panggung bagi talenta muda, membangun jaringan kreatif, dan mendorong ekosistem inovasi kampus.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 pt-4 reveal">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-red-700">500+</div>
+              <div class="text-xs text-stone-500 uppercase tracking-wider mt-1">Peserta</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-red-700">20+</div>
+              <div class="text-xs text-stone-500 uppercase tracking-wider mt-1">Acara</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-red-700">15+</div>
+              <div class="text-xs text-stone-500 uppercase tracking-wider mt-1">Narasumber</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Profil -->
+      <div class="mt-20 reveal">
+        <div class="text-center mb-10">
+          <h3 class="text-2xl font-semibold tracking-tight">Video Profil</h3>
+          <p class="text-stone-500 text-sm mt-2">Saksikan keseruan Festival Kreatif tahun sebelumnya</p>
+        </div>
+        <div class="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-stone-900">
+          <video controls class="w-full" poster="https://picsum.photos/seed/video-poster/1200/600.jpg" preload="metadata">
+            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            Browser Anda tidak mendukung video.
+          </video>
+        </div>
+      </div>
+
+      <!-- Audio Narasi -->
+      <div class="mt-16 max-w-2xl mx-auto reveal">
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-stone-100 text-center">
+          <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <iconify-icon icon="lucide:headphones" width="24" class="text-red-700"></iconify-icon>
+          </div>
+          <h4 class="font-semibold mb-2">Audio Narasi - Pengantar Festival</h4>
+          <p class="text-sm text-stone-500 mb-5">Dengarkan narasi singkat tentang apa yang akan Anda temui di Festival Kreatif 2025.</p>
+          <audio controls class="w-full">
+            <source src="https://www.w3schools.com/html/horse.mp3" type="audio/mpeg">
+            Browser Anda tidak mendukung audio.
+          </audio>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== JADWAL KEGIATAN ==================== -->
+  <section id="jadwal" class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 reveal">
+        <span class="text-xs font-bold uppercase tracking-widest text-red-700 mb-3 block">Jadwal</span>
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-4">Jadwal Kegiatan</h2>
+        <p class="text-stone-500 max-w-xl mx-auto leading-relaxed">3 hari penuh acara yang dirancang untuk menginspirasi dan mengembangkan kreativitas Anda.</p>
+      </div>
+
+      <div class="flex justify-center gap-3 mb-12 reveal">
+        <button class="schedule-tab active" onclick="switchDay(0, this)">Hari 1 - 15 Ags</button>
+        <button class="schedule-tab" onclick="switchDay(1, this)">Hari 2 - 16 Ags</button>
+        <button class="schedule-tab" onclick="switchDay(2, this)">Hari 3 - 17 Ags</button>
+      </div>
+
+      <!-- Day 1 -->
+      <div class="schedule-day" id="day-0">
+        <div class="max-w-3xl mx-auto space-y-4">
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">08:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Upacara Pembukaan</h4>
+              <p class="text-xs text-stone-500 mt-1">Auditorium Utama - Pembukaan resmi oleh Rektor</p>
+            </div>
+            <span class="text-xs font-medium bg-green-50 text-green-700 px-3 py-1 rounded-full">Live</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">09:30</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Keynote: Masa Depan Kreativitas</h4>
+              <p class="text-xs text-stone-500 mt-1">Aula B - oleh Prof. Andi Prasetyo</p>
+            </div>
+            <span class="text-xs font-medium bg-blue-50 text-blue-700 px-3 py-1 rounded-full">Talk</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">13:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Workshop: UI/UX Design</h4>
+              <p class="text-xs text-stone-500 mt-1">Lab Komputer 2 - oleh Tim DesignHub</p>
+            </div>
+            <span class="text-xs font-medium bg-amber-50 text-amber-700 px-3 py-1 rounded-full">Workshop</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">19:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Pentas Seni & Acoustic Night</h4>
+              <p class="text-xs text-stone-500 mt-1">Amfiteater - Penampilan musik akustik mahasiswa</p>
+            </div>
+            <span class="text-xs font-medium bg-purple-50 text-purple-700 px-3 py-1 rounded-full">Seni</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 2 -->
+      <div class="schedule-day hidden" id="day-1">
+        <div class="max-w-3xl mx-auto space-y-4">
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">08:30</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Hackathon Dimulai</h4>
+              <p class="text-xs text-stone-500 mt-1">Lab Komputer 1 & 2 - Kompetisi coding 24 jam</p>
+            </div>
+            <span class="text-xs font-medium bg-red-50 text-red-700 px-3 py-1 rounded-full">Kompetisi</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">10:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Panel: Startup di Era Digital</h4>
+              <p class="text-xs text-stone-500 mt-1">Aula A - dengan founder startup lokal</p>
+            </div>
+            <span class="text-xs font-medium bg-blue-50 text-blue-700 px-3 py-1 rounded-full">Talk</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">14:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Workshop: Fotografi Digital</h4>
+              <p class="text-xs text-stone-500 mt-1">Studio Foto - oleh Rina Sagita</p>
+            </div>
+            <span class="text-xs font-medium bg-amber-50 text-amber-700 px-3 py-1 rounded-full">Workshop</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">19:30</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Film Screening & Diskusi</h4>
+              <p class="text-xs text-stone-500 mt-1">Auditorium - Screening film pendek karya mahasiswa</p>
+            </div>
+            <span class="text-xs font-medium bg-purple-50 text-purple-700 px-3 py-1 rounded-full">Seni</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Day 3 -->
+      <div class="schedule-day hidden" id="day-2">
+        <div class="max-w-3xl mx-auto space-y-4">
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">09:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Demo Hackathon</h4>
+              <p class="text-xs text-stone-500 mt-1">Lab Komputer 1 - Presentasi hasil hackathon</p>
+            </div>
+            <span class="text-xs font-medium bg-red-50 text-red-700 px-3 py-1 rounded-full">Kompetisi</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">13:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Bazar Kreatif & UMKM</h4>
+              <p class="text-xs text-stone-500 mt-1">Area Parkir Timur - 30+ tenant UMKM mahasiswa</p>
+            </div>
+            <span class="text-xs font-medium bg-green-50 text-green-700 px-3 py-1 rounded-full">Expo</span>
+          </div>
+          <div class="flex gap-5 items-start bg-stone-50 rounded-xl p-5 hover-lift group">
+            <div class="text-center min-w-[60px]">
+              <div class="text-sm font-bold text-red-700">16:00</div>
+              <div class="text-xs text-stone-400">WIB</div>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm group-hover:text-red-700 transition-colors">Penghargaan & Penutupan</h4>
+              <p class="text-xs text-stone-500 mt-1">Auditorium Utama - Pengumuman pemenang dan penutupan</p>
+            </div>
+            <span class="text-xs font-medium bg-stone-100 text-stone-700 px-3 py-1 rounded-full">Ceremony</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== GALERI MULTIMEDIA ==================== -->
+  <section id="galeri" class="py-24 bg-stone-50">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 reveal">
+        <span class="text-xs font-bold uppercase tracking-widest text-red-700 mb-3 block">Galeri</span>
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-4">Galeri Kegiatan</h2>
+        <p class="text-stone-500 max-w-xl mx-auto leading-relaxed">Dokumentasi momen-momen terbaik dari Festival Kreatif tahun-tahun sebelumnya.</p>
+      </div>
+
+      <div class="flex justify-center gap-3 mb-10 reveal">
+        <button class="gallery-filter active text-xs font-semibold uppercase tracking-wider px-5 py-2 rounded-full bg-stone-900 text-white transition-all duration-300" onclick="filterGallery('all', this)">Semua</button>
+        <button class="gallery-filter text-xs font-semibold uppercase tracking-wider px-5 py-2 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all duration-300" onclick="filterGallery('seni', this)">Seni</button>
+        <button class="gallery-filter text-xs font-semibold uppercase tracking-wider px-5 py-2 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all duration-300" onclick="filterGallery('teknologi', this)">Teknologi</button>
+        <button class="gallery-filter text-xs font-semibold uppercase tracking-wider px-5 py-2 rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all duration-300" onclick="filterGallery('penghargaan', this)">Penghargaan</button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="galleryGrid">
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="seni" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery1/500/400.jpg" alt="Gallery 1" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Pentas Seni 2024</span>
+          </div>
+        </div>
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="teknologi" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery2/500/400.jpg" alt="Gallery 2" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Hackathon 2024</span>
+          </div>
+        </div>
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="seni" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery3/500/400.jpg" alt="Gallery 3" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Pameran Seni Rupa</span>
+          </div>
+        </div>
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="penghargaan" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery4/500/400.jpg" alt="Gallery 4" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Penghargaan 2024</span>
+          </div>
+        </div>
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="teknologi" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery5/500/400.jpg" alt="Gallery 5" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Workshop Teknologi</span>
+          </div>
+        </div>
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="seni" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery6/500/400.jpg" alt="Gallery 6" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Music Performance</span>
+          </div>
+        </div>
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="penghargaan" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery7/500/400.jpg" alt="Gallery 7" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Best Project Award</span>
+          </div>
+        </div>
+        <div class="gallery-item group relative overflow-hidden rounded-xl cursor-pointer hover-lift" data-category="teknologi" onclick="openLightbox(this)">
+          <img src="https://picsum.photos/seed/gallery8/500/400.jpg" alt="Gallery 8" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700">
+          <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+            <span class="text-white text-sm font-medium">Demo Aplikasi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="absolute top-6 right-6 text-white/80 hover:text-white transition-colors" onclick="closeLightbox(event)">
+      <iconify-icon icon="lucide:x" width="28"></iconify-icon>
+    </button>
+    <img id="lightboxImg" src="" alt="Preview">
+  </div>
+
+  <!-- ==================== KONTAK & LAYANAN ==================== -->
+  <section id="kontak" class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16 reveal">
+        <span class="text-xs font-bold uppercase tracking-widest text-red-700 mb-3 block">Kontak & Layanan</span>
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-4">Hubungi Kami</h2>
+        <p class="text-stone-500 max-w-xl mx-auto leading-relaxed">Ada pertanyaan? Tim kami siap membantu Anda.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-8">
+        <div class="bg-stone-50 rounded-2xl p-8 text-center hover-lift reveal">
+          <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <iconify-icon icon="lucide:phone" width="24" class="text-red-700"></iconify-icon>
+          </div>
+          <h4 class="font-semibold mb-2">Call Center</h4>
+          <p class="text-sm text-stone-500 mb-3">Senin - Jumat, 08:00 - 16:00 WIB</p>
+          <a href="tel:+6281234567890" class="text-red-700 font-semibold text-sm hover:text-red-800 transition-colors">+62 812-3456-7890</a>
+        </div>
+        <div class="bg-stone-50 rounded-2xl p-8 text-center hover-lift reveal">
+          <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <iconify-icon icon="lucide:mail" width="24" class="text-red-700"></iconify-icon>
+          </div>
+          <h4 class="font-semibold mb-2">Email</h4>
+          <p class="text-sm text-stone-500 mb-3">Respon dalam 1x24 jam</p>
+          <a href="mailto:festival@campus.ac.id" class="text-red-700 font-semibold text-sm hover:text-red-800 transition-colors">festival@campus.ac.id</a>
+        </div>
+        <div class="bg-stone-50 rounded-2xl p-8 text-center hover-lift reveal">
+          <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <iconify-icon icon="lucide:map-pin" width="24" class="text-red-700"></iconify-icon>
+          </div>
+          <h4 class="font-semibold mb-2">Lokasi</h4>
+          <p class="text-sm text-stone-500 mb-3">Kampus Utama, Gedung Rektorat</p>
+          <span class="text-red-700 font-semibold text-sm">Jl. Pendidikan No. 1</span>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div class="max-w-2xl mx-auto mt-16 reveal">
+        <div class="bg-stone-50 rounded-2xl p-8 md:p-10 border border-stone-200">
+          <h3 class="text-xl font-semibold mb-6 text-center">Formulir Kontak</h3>
+          <form id="contactForm" onsubmit="submitContact(event)" class="space-y-5">
+            <div class="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Nama Lengkap</label>
+                <input type="text" required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all" placeholder="Masukkan nama Anda">
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Email</label>
+                <input type="email" required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all" placeholder="email@contoh.com">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Subjek</label>
+              <select required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all">
+                <option value="">Pilih subjek</option>
+                <option>Informasi Umum</option>
+                <option>Pendaftaran</option>
+                <option>Kerjasama / Sponsorship</option>
+                <option>Lainnya</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Pesan</label>
+              <textarea required rows="4" class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all resize-none" placeholder="Tulis pesan Anda..."></textarea>
+            </div>
+            <button type="submit" class="w-full bg-stone-900 text-white font-medium py-3.5 rounded-lg hover:bg-red-700 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2">
+              Kirim Pesan
+              <iconify-icon icon="lucide:send" width="16"></iconify-icon>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FORMULIR PENDAFTARAN ==================== -->
+  <section id="pendaftaran" class="py-24 bg-stone-900 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-red-700/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-red-700/5 rounded-full blur-3xl"></div>
+
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <div class="text-center mb-16 reveal">
+        <span class="text-xs font-bold uppercase tracking-widest text-red-400 mb-3 block">Pendaftaran</span>
+        <h2 class="text-3xl md:text-4xl font-semibold tracking-tight mb-4 text-white">Daftar Sekarang</h2>
+        <p class="text-stone-400 max-w-xl mx-auto leading-relaxed">Jangan lewatkan kesempatan! Isi formulir berikut untuk mendaftar sebagai peserta Festival Kreatif 2025.</p>
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl p-8 md:p-10 shadow-2xl reveal">
+          <form id="registrationForm" onsubmit="submitRegistration(event)">
+            <h4 class="font-semibold text-sm uppercase tracking-wider text-stone-600 mb-5 flex items-center gap-2">
+              <span class="w-6 h-6 bg-red-700 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+              Data Pribadi
+            </h4>
+            <div class="grid sm:grid-cols-2 gap-5 mb-8">
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Nama Lengkap *</label>
+                <input type="text" required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-stone-50 text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all" placeholder="Nama lengkap Anda">
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">NIM / ID *</label>
+                <input type="text" required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-stone-50 text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all" placeholder="Contoh: 2024001">
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Email *</label>
+                <input type="email" required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-stone-50 text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all" placeholder="email@kampus.ac.id">
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">No. HP / WhatsApp *</label>
+                <input type="tel" required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-stone-50 text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all" placeholder="08xxxxxxxxxx">
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Fakultas / Program Studi *</label>
+                <input type="text" required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-stone-50 text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all" placeholder="Fakultas Ilmu Komputer">
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2 block">Semester *</label>
+                <select required class="w-full px-4 py-3 rounded-lg border border-stone-200 bg-stone-50 text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all">
+                  <option value="">Pilih semester</option>
+                  <option>1</option><option>2</option><option>3</option><option>4</option>
+                  <option>5</option><option>6</option><option>7</option><option>8</option>
+                </select>
+              </div>
+            </div>
+
+            <h4 class="font-semibold text-sm uppercase tracking-wider text-stone-600 mb-5 flex items-center gap-2">
+              <span class="w-6 h-6 bg-red-700 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+              Pilihan Acara
+            </h4>
+            <div class="grid sm:grid-cols-2 gap-3 mb-8">
+              <label class="flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-red-300 cursor-pointer transition-all group">
+                <input type="checkbox" class="w-4 h-4 accent-red-700" name="events" value="workshop-uiux">
+                <span class="text-sm group-hover:text-red-700 transition-colors">Workshop UI/UX Design</span>
+              </label>
+              <label class="flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-red-300 cursor-pointer transition-all group">
+                <input type="checkbox" class="w-4 h-4 accent-red-700" name="events" value="hackathon">
+                <span class="text-sm group-hover:text-red-700 transition-colors">Hackathon 24 Jam</span>
+              </label>
+              <label class="flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-red-300 cursor-pointer transition-all group">
+                <input type="checkbox" class="w-4 h-4 accent-red-700" name="events" value="workshop-foto">
+                <span class="text-sm group-hover:text-red-700 transition-colors">Workshop Fotografi</span>
+              </label>
+              <label class="flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-red-300 cursor-pointer transition-all group">
+                <input type="checkbox" class="w-4 h-4 accent-red-700" name="events" value="pentas-seni">
+                <span class="text-sm group-hover:text-red-700 transition-colors">Pentas Seni</span>
+              </label>
+              <label class="flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-red-300 cursor-pointer transition-all group">
+                <input type="checkbox" class="w-4 h-4 accent-red-700" name="events" value="film-screening">
+                <span class="text-sm group-hover:text-red-700 transition-colors">Film Screening</span>
+              </label>
+              <label class="flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-red-300 cursor-pointer transition-all group">
+                <input type="checkbox" class="w-4 h-4 accent-red-700" name="events" value="bazar">
+                <span class="text-sm group-hover:text-red-700 transition-colors">Bazar Kreatif</span>
+              </label>
+            </div>
+
+            <div class="mb-6">
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" required class="w-4 h-4 accent-red-700 mt-0.5">
+                <span class="text-xs text-stone-500 leading-relaxed">Saya menyatakan data yang saya isikan adalah benar dan saya bersedia mengikuti seluruh ketentuan yang berlaku pada Festival Kreatif Campus 2025.</span>
+              </label>
+            </div>
+
+            <button type="submit" class="w-full bg-red-700 text-white font-semibold py-4 rounded-lg hover:bg-red-800 transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-red-700/30 animate-pulse-glow flex items-center justify-center gap-2 text-base">
+              Kirim Pendaftaran
+              <iconify-icon icon="lucide:arrow-right" width="18"></iconify-icon>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="bg-stone-900 text-stone-400 pt-16 pb-8">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid md:grid-cols-4 gap-10 mb-12">
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 bg-red-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">FK</div>
+            <span class="font-semibold text-white tracking-tight">Festival Kreatif Campus</span>
+          </div>
+          <p class="text-sm leading-relaxed max-w-md mb-6">Festival kreativitas mahasiswa tahunan yang menjadi wadah ekspresi, inovasi, dan kolaborasi lintas disiplin ilmu.</p>
+          <div class="flex gap-3">
+            <a href="#" class="w-10 h-10 bg-stone-800 rounded-lg flex items-center justify-center hover:bg-red-700 transition-colors duration-300">
+              <iconify-icon icon="lucide:instagram" width="18" class="text-stone-400"></iconify-icon>
+            </a>
+            <a href="#" class="w-10 h-10 bg-stone-800 rounded-lg flex items-center justify-center hover:bg-red-700 transition-colors duration-300">
+              <iconify-icon icon="lucide:twitter" width="18" class="text-stone-400"></iconify-icon>
+            </a>
+            <a href="#" class="w-10 h-10 bg-stone-800 rounded-lg flex items-center justify-center hover:bg-red-700 transition-colors duration-300">
+              <iconify-icon icon="lucide:youtube" width="18" class="text-stone-400"></iconify-icon>
+            </a>
+            <a href="#" class="w-10 h-10 bg-stone-800 rounded-lg flex items-center justify-center hover:bg-red-700 transition-colors duration-300">
+              <iconify-icon icon="lucide:facebook" width="18" class="text-stone-400"></iconify-icon>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-4">Tautan Cepat</h4>
+          <ul class="space-y-2">
+            <li><a href="#beranda" class="text-sm hover:text-red-400 transition-colors">Beranda</a></li>
+            <li><a href="#tentang" class="text-sm hover:text-red-400 transition-colors">Tentang</a></li>
+            <li><a href="#jadwal" class="text-sm hover:text-red-400 transition-colors">Jadwal</a></li>
+            <li><a href="#galeri" class="text-sm hover:text-red-400 transition-colors">Galeri</a></li>
+            <li><a href="#pendaftaran" class="text-sm hover:text-red-400 transition-colors">Pendaftaran</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-4">Kontak</h4>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-sm"><iconify-icon icon="lucide:phone" width="14"></iconify-icon> +62 812-3456-7890</li>
+            <li class="flex items-center gap-2 text-sm"><iconify-icon icon="lucide:mail" width="14"></iconify-icon> festival@campus.ac.id</li>
+            <li class="flex items-center gap-2 text-sm"><iconify-icon icon="lucide:map-pin" width="14"></iconify-icon> Jl. Pendidikan No. 1</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-stone-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-xs text-stone-500">&copy; 2025 Festival Kreatif Campus. All rights reserved.</p>
+        <p class="text-xs text-stone-600">Made with <span class="text-red-700">&hearts;</span> for UAS Multimedia</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- WhatsApp Button -->
+  <a href="https://wa.me/6281234567890?text=Halo,%20saya%20ingin%20bertanya%20tentang%20Festival%20Kreatif%202025" target="_blank"
+    class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 hover:scale-110 transition-all duration-300 animate-pulse-glow" style="box-shadow: 0 0 0 0 rgba(34,197,94,0.4);">
+    <iconify-icon icon="lucide:message-circle" width="26" class="text-white"></iconify-icon>
+  </a>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // Mobile Menu Toggle
+    let menuOpen = false;
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      document.getElementById('mobileMenu').classList.toggle('open', menuOpen);
+      document.getElementById('menuIcon').setAttribute('icon', menuOpen ? 'lucide:x' : 'lucide:menu');
+    }
+
+    // Hero Slider
+    let currentSlide = 0;
+    const totalSlides = 3;
+    let sliderInterval;
+
+    function goToSlide(index) {
+      currentSlide = index;
+      document.getElementById('heroSlider').style.transform = `translateX(-${index * 100}%)`;
+      document.querySelectorAll('.slider-dot').forEach((dot, i) => {
+        dot.classList.toggle('bg-white/80', i === index);
+        dot.classList.toggle('bg-white/30', i !== index);
+      });
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      goToSlide(currentSlide);
+    }
+
+    setInterval(nextSlide, 5000);
+
+    // Countdown Timer
+    function updateCountdown() {
+      const eventDate = new Date('2025-08-15T08:00:00+07:00');
+      const now = new Date();
+      const diff = eventDate - now;
+      if (diff <= 0) {
+        document.getElementById('days').textContent = '00';
+        document.getElementById('hours').textContent = '00';
+        document.getElementById('minutes').textContent = '00';
+        document.getElementById('seconds').textContent = '00';
+        return;
+      }
+      document.getElementById('days').textContent = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
+      document.getElementById('hours').textContent = String(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Schedule Tabs
+    function switchDay(dayIndex, btn) {
+      document.querySelectorAll('.schedule-day').forEach(d => d.classList.add('hidden'));
+      document.getElementById(`day-${dayIndex}`).classList.remove('hidden');
+      document.querySelectorAll('.schedule-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // Gallery Filter
+    function filterGallery(category, btn) {
+      document.querySelectorAll('.gallery-filter').forEach(f => {
+        f.classList.remove('bg-stone-900', 'text-white');
+        f.classList.add('bg-stone-100', 'text-stone-600');
+      });
+      btn.classList.remove('bg-stone-100', 'text-stone-600');
+      btn.classList.add('bg-stone-900', 'text-white');
+      document.querySelectorAll('.gallery-item').forEach(item => {
+        if (category === 'all' || item.dataset.category === category) {
+          item.style.display = 'block';
+          item.style.opacity = '0';
+          item.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            item.style.transition = 'all 0.4s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'scale(1)';
+          }, 50);
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    // Lightbox
+    function openLightbox(el) {
+      const img = el.querySelector('img');
+      document.getElementById('lightboxImg').src = img.src.replace('/500/400', '/1200/800');
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(e) {
+      if (e.target === document.getElementById('lightbox') || e.target.closest('button')) {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // Contact Form
+    function submitContact(e) {
+      e.preventDefault();
+      showToast('✅ Pesan Anda berhasil dikirim! Kami akan segera merespons.');
+      e.target.reset();
+    }
+
+    // Registration Form
+    function submitRegistration(e) {
+      e.preventDefault();
+      const checkedEvents = document.querySelectorAll('input[name="events"]:checked');
+      if (checkedEvents.length === 0) {
+        showToast('⚠️ Pilih minimal satu acara yang ingin diikuti.');
+        return;
+      }
+      showToast('🎉 Pendaftaran berhasil! Silakan cek email untuk konfirmasi.');
+      e.target.reset();
+    }
+
+    // Scroll Reveal
+    function revealOnScroll() {
+      document.querySelectorAll('.reveal').forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight - 120) {
+          el.classList.add('visible');
+        }
+      });
+    }
+    window.addEventListener('scroll', revealOnScroll);
+    window.addEventListener('load', revealOnScroll);
+
+    // Nav Active Link
+    window.addEventListener('scroll', () => {
+      let current = '';
+      document.querySelectorAll('section[id]').forEach(section => {
+        if (pageYOffset >= section.offsetTop - 100) {
+          current = section.getAttribute('id');
+        }
+      });
+      document.querySelectorAll('nav a[href^="#"]').forEach(link => {
+        link.classList.remove('text-red-700');
+        if (link.getAttribute('href') === `#${current}`) link.classList.add('text-red-700');
+      });
+    });
+
+    // Navbar Shadow
+    window.addEventListener('scroll', () => {
+      document.querySelector('nav').style.boxShadow = window.scrollY > 50 ? '0 4px 20px rgba(0,0,0,0.08)' : 'none';
+    });
+  </script>
+</body>
+</html>
